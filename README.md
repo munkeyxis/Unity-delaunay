@@ -1,5 +1,3 @@
-This repository is no longer maintained, but there are some great alternatives.
-==============
+Fork of jceipek's Unity-delaunay. 
 
-- [https://github.com/adamgit/Unity-delaunay](https://github.com/adamgit/Unity-delaunay) (Fork of this project)
-- [ScrawkBlog's Delaunay Triangulation in Unity](https://scrawkblog.com/2014/06/16/delaunay-triangulation-in-unity/)
+This project makes it possible to generate Voronoi diagrams which can be utilized as maps in other projects.
