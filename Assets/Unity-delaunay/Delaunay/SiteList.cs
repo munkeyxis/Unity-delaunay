@@ -9,38 +9,42 @@ namespace Delaunay
 
 	public sealed class SiteList: Utils.IDisposable
 	{
-		private List<Site> _sites;
+		public List<Site> Sites;
 		private int _currentIndex;
 		
 		private bool _sorted;
 		
 		public SiteList ()
 		{
-			_sites = new List<Site> ();
+			Sites = new List<Site> ();
 			_sorted = false;
 		}
 		
 		public void Dispose ()
 		{
-			if (_sites != null) {
-				for (int i = 0; i < _sites.Count; i++) {
-					Site site = _sites [i];
+			if (Sites != null) {
+				for (int i = 0; i < Sites.Count; i++) {
+					Site site = Sites [i];
 					site.Dispose ();
 				}
-				_sites.Clear ();
-				_sites = null;
+				Sites.Clear ();
+				Sites = null;
 			}
 		}
 		
 		public int Add (Site site)
 		{
 			_sorted = false;
-			_sites.Add (site);
-			return _sites.Count;
+			Sites.Add (site);
+			return Sites.Count;
 		}
 		
 		public int Count {
-			get { return _sites.Count;}
+			get { return Sites.Count;}
+		}
+		
+		public void ResetListIndex() {
+			_currentIndex = 0;
 		}
 		
 		public Site Next ()
@@ -48,8 +52,8 @@ namespace Delaunay
 			if (_sorted == false) {
 				UnityEngine.Debug.LogError ("SiteList::next():  sites have not been sorted");
 			}
-			if (_currentIndex < _sites.Count) {
-				return _sites [_currentIndex++];
+			if (_currentIndex < Sites.Count) {
+				return Sites [_currentIndex++];
 			} else {
 				return null;
 			}
@@ -58,18 +62,18 @@ namespace Delaunay
 		internal Rect GetSitesBounds ()
 		{
 			if (_sorted == false) {
-				Site.SortSites (_sites);
+				Site.SortSites (Sites);
 				_currentIndex = 0;
 				_sorted = true;
 			}
 			float xmin, xmax, ymin, ymax;
-			if (_sites.Count == 0) {
+			if (Sites.Count == 0) {
 				return new Rect (0, 0, 0, 0);
 			}
 			xmin = float.MaxValue;
 			xmax = float.MinValue;
-			for (int i = 0; i<_sites.Count; i++) {
-				Site site = _sites [i];
+			for (int i = 0; i<Sites.Count; i++) {
+				Site site = Sites [i];
 				if (site.x < xmin) {
 					xmin = site.x;
 				}
@@ -78,8 +82,8 @@ namespace Delaunay
 				}
 			}
 			// here's where we assume that the sites have been sorted on y:
-			ymin = _sites [0].y;
-			ymax = _sites [_sites.Count - 1].y;
+			ymin = Sites [0].y;
+			ymax = Sites [Sites.Count - 1].y;
 			
 			return new Rect (xmin, ymin, xmax - xmin, ymax - ymin);
 		}
@@ -88,8 +92,8 @@ namespace Delaunay
 		{
 			List<uint> colors = new List<uint> ();
 			Site site;
-			for (int i = 0; i< _sites.Count; i++) {
-				site = _sites [i];
+			for (int i = 0; i< Sites.Count; i++) {
+				site = Sites [i];
 				colors.Add (/*referenceImage ? referenceImage.getPixel(site.x, site.y) :*/site.color);
 			}
 			return colors;
@@ -99,8 +103,8 @@ namespace Delaunay
 		{
 			List<Vector2> coords = new List<Vector2> ();
 			Site site;
-			for (int i = 0; i<_sites.Count; i++) {
-				site = _sites [i];
+			for (int i = 0; i<Sites.Count; i++) {
+				site = Sites [i];
 				coords.Add (site.Coord);
 			}
 			return coords;
@@ -116,8 +120,8 @@ namespace Delaunay
 		{
 			List<Circle> circles = new List<Circle> ();
 			Site site;
-			for (int i = 0; i<_sites.Count; i++) {
-				site = _sites [i];
+			for (int i = 0; i<Sites.Count; i++) {
+				site = Sites [i];
 				float radius = 0f;
 				Edge nearestEdge = site.NearestEdge ();
 				
@@ -133,9 +137,9 @@ namespace Delaunay
 		{
 			List<List<Vector2>> regions = new List<List<Vector2>> ();
 			Site site;
-			for (int i = 0; i< _sites.Count; i++) {
-				site = _sites [i];
-				regions.Add (site.Region (plotBounds));
+			for (int i = 0; i< Sites.Count; i++) {
+				site = Sites [i];
+				regions.Add (site.GenerateRegion (plotBounds));
 			}
 			return regions;
 		}

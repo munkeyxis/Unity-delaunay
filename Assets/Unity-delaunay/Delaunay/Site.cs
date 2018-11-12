@@ -42,16 +42,16 @@ namespace Delaunay
 			// swap _siteIndex values if necessary to match new ordering:
 			uint tempIndex;
 			if (returnValue == -1) {
-				if (this._siteIndex > s2._siteIndex) {
-					tempIndex = this._siteIndex;
-					this._siteIndex = s2._siteIndex;
-					s2._siteIndex = tempIndex;
+				if (this.Index > s2.Index) {
+					tempIndex = this.Index;
+					this.Index = s2.Index;
+					s2.Index = tempIndex;
 				}
 			} else if (returnValue == 1) {
-				if (s2._siteIndex > this._siteIndex) {
-					tempIndex = s2._siteIndex;
-					s2._siteIndex = this._siteIndex;
-					this._siteIndex = tempIndex;
+				if (s2.Index > this.Index) {
+					tempIndex = s2.Index;
+					s2.Index = this.Index;
+					this.Index = tempIndex;
 				}
 				
 			}
@@ -74,7 +74,7 @@ namespace Delaunay
 		public uint color;
 		public float weight;
 		
-		private uint _siteIndex;
+		public uint Index;
 		
 		// the edges that define this Site's Voronoi region:
 		private List<Edge> _edges;
@@ -85,6 +85,10 @@ namespace Delaunay
 		private List<Side> _edgeOrientations;
 		// ordered list of points that define the region clipped to bounds:
 		private List<Vector2> _region;
+		public List<Vector2> Region
+		{
+			get { return _region; }
+		}
 
 		private Site (Vector2 p, uint index, float weight, uint color)
 		{
@@ -98,7 +102,7 @@ namespace Delaunay
 		private Site Init (Vector2 p, uint index, float weight, uint color)
 		{
 			_coord = p;
-			_siteIndex = index;
+			Index = index;
 			this.weight = weight;
 			this.color = color;
 			_edges = new List<Edge> ();
@@ -108,7 +112,7 @@ namespace Delaunay
 		
 		public override string ToString ()
 		{
-			return "Site " + _siteIndex.ToString () + ": " + Coord.ToString ();
+			return "Site " + Index.ToString () + ": " + Coord.ToString ();
 		}
 		
 		private void Move (Vector2 p)
@@ -181,7 +185,7 @@ namespace Delaunay
 			return null;
 		}
 		
-		internal List<Vector2> Region (Rect clippingBounds)
+		internal List<Vector2> GenerateRegion (Rect clippingBounds)
 		{
 			if (_edges == null || _edges.Count == 0) {
 				return new List<Vector2> ();

@@ -5,32 +5,27 @@ using Delaunay.Geo;
 
 public class VoronoiDemo : MonoBehaviour
 {
+	public GameObject polygonPrefab;
+	public int RelaxationInterations;
 	[SerializeField]
-	private int
-		m_pointCount = 300;
-
+	private int m_pointCount = 300;
 	private List<Vector2> m_points;
 	private float m_mapWidth = 100;
 	private float m_mapHeight = 50;
+	private Voronoi _voronoi;
+	private List<List<Vector2>> _regions;
 	private List<LineSegment> m_edges = null;
-	private List<LineSegment> m_spanningTree;
-	private List<LineSegment> m_delaunayTriangulation;
+	private List<GameObject> polys;
 
 	void Awake ()
 	{
+		polys = new List<GameObject>();
 		Demo ();
 	}
 
-	void Update ()
+	public void Demo ()
 	{
-		if (Input.anyKeyDown) {
-			Demo ();
-		}
-	}
-
-	private void Demo ()
-	{
-				
+		ClearGameObjects();
 		List<uint> colors = new List<uint> ();
 		m_points = new List<Vector2> ();
 			
@@ -41,11 +36,41 @@ public class VoronoiDemo : MonoBehaviour
 					UnityEngine.Random.Range (0, m_mapHeight))
 			);
 		}
-		Delaunay.Voronoi v = new Delaunay.Voronoi (m_points, colors, new Rect (0, 0, m_mapWidth, m_mapHeight));
-		m_edges = v.VoronoiDiagram ();
-			
-		m_spanningTree = v.SpanningTree (KruskalType.MINIMUM);
-		m_delaunayTriangulation = v.DelaunayTriangulation ();
+		_voronoi = new Voronoi (m_points, colors, new Rect (0, 0, m_mapWidth, m_mapHeight), RelaxationInterations);
+		m_edges = _voronoi.VoronoiDiagram ();
+		
+		CreatePolygonsForRegions();
+	}
+
+	private void ClearGameObjects()
+	{
+		if (polys.Count == 0) return;
+
+		foreach (var poly in polys)
+		{
+			Destroy(poly);
+		}
+		
+		polys = new List<GameObject>();
+	}
+
+	private void CreatePolygonsForRegions()
+	{
+		ClickableRegion.ActiveSite = _voronoi.SitesList.Sites[0];
+		
+		foreach (var site in _voronoi.SitesList.Sites)
+		{
+			GameObject polyGameObject = Instantiate(polygonPrefab);
+			polyGameObject.GetComponent<PolygonCollider2D>().SetPath(0, site.Region.ToArray());
+			polyGameObject.GetComponent<ClickableRegion>().Site = site;
+			LineRenderer lr = polyGameObject.GetComponent<LineRenderer>();
+			lr.positionCount = site.Region.Count;
+			for(int i = 0; i < site.Region.Count; i++)
+			{
+				lr.SetPosition(i, site.Region[i]);
+			}
+			polys.Add(polyGameObject);
+		}
 	}
 
 	void OnDrawGizmos ()
@@ -65,6 +90,7 @@ public class VoronoiDemo : MonoBehaviour
 				Gizmos.DrawLine ((Vector3)left, (Vector3)right);
 			}
 		}
+		/*
 
 		Gizmos.color = Color.magenta;
 		if (m_delaunayTriangulation != null) {
@@ -83,7 +109,7 @@ public class VoronoiDemo : MonoBehaviour
 				Vector2 right = (Vector2)seg.p1;
 				Gizmos.DrawLine ((Vector3)left, (Vector3)right);
 			}
-		}
+		}*/
 
 		Gizmos.color = Color.yellow;
 		Gizmos.DrawLine (new Vector2 (0, 0), new Vector2 (0, m_mapHeight));

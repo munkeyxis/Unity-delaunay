@@ -23,7 +23,7 @@ namespace Delaunay
 {
 	public sealed class Voronoi: Utils.IDisposable
 	{
-		private SiteList _sites;
+		public SiteList SitesList;
 		private Dictionary <Vector2,Site> _sitesIndexedByLocation;
 		private List<Triangle> _triangles;
 		private List<Edge> _edges;
@@ -39,9 +39,9 @@ namespace Delaunay
 		public void Dispose ()
 		{
 			int i, n;
-			if (_sites != null) {
-				_sites.Dispose ();
-				_sites = null;
+			if (SitesList != null) {
+				SitesList.Dispose ();
+				SitesList = null;
 			}
 			if (_triangles != null) {
 				n = _triangles.Count;
@@ -65,13 +65,25 @@ namespace Delaunay
 		
 		public Voronoi (List<Vector2> points, List<uint> colors, Rect plotBounds)
 		{
-			_sites = new SiteList ();
+			Init(points, plotBounds, colors);
+		}
+		
+		public Voronoi (List<Vector2> points, List<uint> colors, Rect plotBounds, int lloydRelaxation)
+		{
+			Init(points, plotBounds, colors);
+			LloydRelaxation(lloydRelaxation);
+		}
+		
+		private void Init(List<Vector2> points, Rect plotBounds, List<uint> colors = null)
+		{
+			SitesList = new SiteList ();
 			_sitesIndexedByLocation = new Dictionary <Vector2,Site> (); // XXX: Used to be Dictionary(true) -- weak refs. 
 			AddSites (points, colors);
 			_plotBounds = plotBounds;
 			_triangles = new List<Triangle> ();
 			_edges = new List<Edge> ();
 			FortunesAlgorithm ();
+			Regions();
 		}
 		
 		private void AddSites (List<Vector2> points, List<uint> colors)
@@ -88,7 +100,7 @@ namespace Delaunay
 				return; // Prevent duplicate site! (Adapted from https://github.com/nodename/as3delaunay/issues/1)
 			float weight = UnityEngine.Random.value * 100f;
 			Site site = Site.Create (p, (uint)index, weight, color);
-			_sites.Add (site);
+			SitesList.Add (site);
 			_sitesIndexedByLocation [p] = site;
 		}
 
@@ -103,7 +115,7 @@ namespace Delaunay
 			if (site == null) {
 				return new List<Vector2> ();
 			}
-			return site.Region (_plotBounds);
+			return site.GenerateRegion (_plotBounds);
 		}
 
 		// TODO: bug: if you call this before you call region(), something goes wrong :(
@@ -125,7 +137,7 @@ namespace Delaunay
 
 		public List<Circle> Circles ()
 		{
-			return _sites.Circles ();
+			return SitesList.Circles ();
 		}
 		
 		public List<LineSegment> VoronoiBoundaryForSite (Vector2 coord)
@@ -194,12 +206,12 @@ namespace Delaunay
 
 		public List<List<Vector2>> Regions ()
 		{
-			return _sites.Regions (_plotBounds);
+			return SitesList.Regions (_plotBounds);
 		}
 		
 		public List<uint> SiteColors (/*BitmapData referenceImage = null*/)
 		{
-			return _sites.SiteColors (/*referenceImage*/);
+			return SitesList.SiteColors (/*referenceImage*/);
 		}
 		
 		/**
@@ -212,12 +224,12 @@ namespace Delaunay
 		 */
 		public Nullable<Vector2> NearestSitePoint (/*BitmapData proximityMap,*/float x, float y)
 		{
-			return _sites.NearestSitePoint (/*proximityMap,*/x, y);
+			return SitesList.NearestSitePoint (/*proximityMap,*/x, y);
 		}
 		
 		public List<Vector2> SiteCoords ()
 		{
-			return _sites.SiteCoords ();
+			return SitesList.SiteCoords ();
 		}
 
 		private Site fortunesAlgorithm_bottomMostSite;
@@ -230,16 +242,16 @@ namespace Delaunay
 			Halfedge lbnd, rbnd, llbnd, rrbnd, bisector;
 			Edge edge;
 			
-			Rect dataBounds = _sites.GetSitesBounds ();
+			Rect dataBounds = SitesList.GetSitesBounds ();
 			
-			int sqrt_nsites = (int)(Mathf.Sqrt (_sites.Count + 4));
+			int sqrt_nsites = (int)(Mathf.Sqrt (SitesList.Count + 4));
 			HalfedgePriorityQueue heap = new HalfedgePriorityQueue (dataBounds.y, dataBounds.height, sqrt_nsites);
 			EdgeList edgeList = new EdgeList (dataBounds.x, dataBounds.width, sqrt_nsites);
 			List<Halfedge> halfEdges = new List<Halfedge> ();
 			List<Vertex> vertices = new List<Vertex> ();
 			
-			fortunesAlgorithm_bottomMostSite = _sites.Next ();
-			newSite = _sites.Next ();
+			fortunesAlgorithm_bottomMostSite = SitesList.Next ();
+			newSite = SitesList.Next ();
 			
 			for (;;) {
 				if (heap.Empty () == false) {
@@ -295,7 +307,7 @@ namespace Delaunay
 						heap.Insert (bisector);	
 					}
 					
-					newSite = _sites.Next ();	
+					newSite = SitesList.Next ();	
 				} else if (heap.Empty () == false) {
 					/* intersection is smallest */
 					lbnd = heap.ExtractMin ();
@@ -367,6 +379,66 @@ namespace Delaunay
 				vertex.Dispose ();
 			}
 			vertices.Clear ();
+		}
+		
+		public void LloydRelaxation(int nbIterations) {
+			// Reapeat the whole process for the number of iterations asked
+			for (int i = 0; i < nbIterations; i++) {
+				List<Vector2> newPoints = new List<Vector2>();
+				// Go thourgh all sites
+				SitesList.ResetListIndex();
+				Site site = SitesList.Next();
+
+				while (site != null) {
+					// Loop all corners of the site to calculate the centroid
+					List<Vector2> region = site.GenerateRegion(plotBounds);
+					if (region.Count < 1) {
+						site = SitesList.Next();
+						continue;
+					}
+					
+					Vector2 centroid = Vector2.zero;
+					float signedArea = 0;
+					float x0 = 0;
+					float y0 = 0;
+					float x1 = 0;
+					float y1 = 0;
+					float a = 0;
+					// For all vertices except last
+					for (int j = 0; j < region.Count-1; j++) {
+						x0 = region[j].x;
+						y0 = region[j].y;
+						x1 = region[j+1].x;
+						y1 = region[j+1].y;
+						a = x0*y1 - x1*y0;
+						signedArea += a;
+						centroid.x += (x0 + x1)*a;
+						centroid.y += (y0 + y1)*a;
+					}
+					// Do last vertex
+					x0 = region[region.Count-1].x;
+					y0 = region[region.Count-1].y;
+					x1 = region[0].x;
+					y1 = region[0].y;
+					a = x0*y1 - x1*y0;
+					signedArea += a;
+					centroid.x += (x0 + x1)*a;
+					centroid.y += (y0 + y1)*a;
+
+					signedArea *= 0.5f;
+					centroid.x /= (6*signedArea);
+					centroid.y /= (6*signedArea);
+					// Move site to the centroid of its Voronoi cell
+					newPoints.Add(centroid);
+					site = SitesList.Next();
+				}
+
+				// Between each replacement of the cendroid of the cell,
+				// we need to recompute Voronoi diagram:
+				Rect origPlotBounds = this.plotBounds;
+				Dispose();
+				Init(newPoints,origPlotBounds);
+			}
 		}
 
 		private Site FortunesAlgorithm_leftRegion (Halfedge he)
