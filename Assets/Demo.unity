@@ -497,7 +497,7 @@ MonoBehaviour:
   polygonPrefab: {fileID: 1614267437052124, guid: fcace06f36b238a478264832764ed8d9,
     type: 2}
   RelaxationInterations: 0
-  m_pointCount: 300
+  m_pointCount: 3
 --- !u!4 &1746107357
 Transform:
   m_ObjectHideFlags: 0
