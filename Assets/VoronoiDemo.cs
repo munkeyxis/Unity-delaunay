@@ -63,6 +63,7 @@ public class VoronoiDemo : MonoBehaviour
 			GameObject polyGameObject = Instantiate(polygonPrefab);
 			polyGameObject.GetComponent<PolygonCollider2D>().SetPath(0, site.Region.ToArray());
 			polyGameObject.GetComponent<ClickableRegion>().Site = site;
+			polyGameObject.GetComponent<AreaFiller>().FillArea(site);
 			LineRenderer lr = polyGameObject.GetComponent<LineRenderer>();
 			lr.positionCount = site.Region.Count;
 			for(int i = 0; i < site.Region.Count; i++)
