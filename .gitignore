@@ -32,3 +32,5 @@ Icon?
 ehthumbs.db
 Thumbs.db
 Assets/.idea/
+Assets/Plugins/Editor/JetBrains/
+.idea/
