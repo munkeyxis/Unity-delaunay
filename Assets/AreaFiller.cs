@@ -38,7 +38,8 @@ public class AreaFiller : MonoBehaviour
 				xRow += ForestSprite.bounds.size.x;
 			}
 
-			yRow += ForestSprite.bounds.extents.y;
+			xRow = lowestX;
+			yRow -= ForestSprite.bounds.extents.y;
 		}
 	}
 	
