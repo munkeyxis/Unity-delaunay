@@ -82,6 +82,14 @@ public class VoronoiDemo : MonoBehaviour
 				Gizmos.DrawSphere (m_points [i], 0.2f);
 			}
 		}
+		
+		Gizmos.color = Color.cyan;
+		if (_voronoi != null && _voronoi.SitesList.Sites != null) {
+			foreach (var site in _voronoi.SitesList.Sites)
+			{
+				Gizmos.DrawSphere (site.Centroid, 0.2f);
+			}
+		}
 
 		if (m_edges != null) {
 			Gizmos.color = Color.white;

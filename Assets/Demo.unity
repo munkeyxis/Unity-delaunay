@@ -113,48 +113,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &150345530
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 71.44538
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 34.038673
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0.19376849
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813054455906574, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-      propertyPath: m_RootOrder
-      value: 5
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: aa84e15d05394bd408d75adb5debaf56, type: 2}
-  m_IsPrefabAsset: 0
 --- !u!1 &875480534
 GameObject:
   m_ObjectHideFlags: 0
@@ -538,8 +496,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   polygonPrefab: {fileID: 1614267437052124, guid: fcace06f36b238a478264832764ed8d9,
     type: 2}
-  RelaxationInterations: 0
-  m_pointCount: 3
+  RelaxationInterations: 2
+  m_pointCount: 20
 --- !u!4 &1746107357
 Transform:
   m_ObjectHideFlags: 0

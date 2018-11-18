@@ -70,7 +70,8 @@ namespace Delaunay
 		public Vector2 Coord {
 			get { return _coord;}
 		}
-		
+
+		public Vector2 Centroid;
 		public uint color;
 		public float weight;
 		

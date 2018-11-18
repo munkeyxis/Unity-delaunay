@@ -397,39 +397,8 @@ namespace Delaunay
 						continue;
 					}
 					
-					Vector2 centroid = Vector2.zero;
-					float signedArea = 0;
-					float x0 = 0;
-					float y0 = 0;
-					float x1 = 0;
-					float y1 = 0;
-					float a = 0;
-					// For all vertices except last
-					for (int j = 0; j < region.Count-1; j++) {
-						x0 = region[j].x;
-						y0 = region[j].y;
-						x1 = region[j+1].x;
-						y1 = region[j+1].y;
-						a = x0*y1 - x1*y0;
-						signedArea += a;
-						centroid.x += (x0 + x1)*a;
-						centroid.y += (y0 + y1)*a;
-					}
-					// Do last vertex
-					x0 = region[region.Count-1].x;
-					y0 = region[region.Count-1].y;
-					x1 = region[0].x;
-					y1 = region[0].y;
-					a = x0*y1 - x1*y0;
-					signedArea += a;
-					centroid.x += (x0 + x1)*a;
-					centroid.y += (y0 + y1)*a;
-
-					signedArea *= 0.5f;
-					centroid.x /= (6*signedArea);
-					centroid.y /= (6*signedArea);
 					// Move site to the centroid of its Voronoi cell
-					newPoints.Add(centroid);
+					newPoints.Add(GetCentroid(site));
 					site = SitesList.Next();
 				}
 
@@ -439,6 +408,49 @@ namespace Delaunay
 				Dispose();
 				Init(newPoints,origPlotBounds);
 			}
+
+			foreach (var site in SitesList.Sites)
+			{
+				site.Centroid = GetCentroid(site);
+			}
+		}
+
+		private Vector2 GetCentroid(Site site)
+		{
+			List<Vector2> region = site.GenerateRegion(plotBounds);
+			Vector2 centroid = Vector2.zero;
+			float signedArea = 0;
+			float x0 = 0;
+			float y0 = 0;
+			float x1 = 0;
+			float y1 = 0;
+			float a = 0;
+			// For all vertices except last
+			for (int j = 0; j < region.Count-1; j++) {
+				x0 = region[j].x;
+				y0 = region[j].y;
+				x1 = region[j+1].x;
+				y1 = region[j+1].y;
+				a = x0*y1 - x1*y0;
+				signedArea += a;
+				centroid.x += (x0 + x1)*a;
+				centroid.y += (y0 + y1)*a;
+			}
+			// Do last vertex
+			x0 = region[region.Count-1].x;
+			y0 = region[region.Count-1].y;
+			x1 = region[0].x;
+			y1 = region[0].y;
+			a = x0*y1 - x1*y0;
+			signedArea += a;
+			centroid.x += (x0 + x1)*a;
+			centroid.y += (y0 + y1)*a;
+
+			signedArea *= 0.5f;
+			centroid.x /= (6*signedArea);
+			centroid.y /= (6*signedArea);
+
+			return centroid;
 		}
 
 		private Site FortunesAlgorithm_leftRegion (Halfedge he)
